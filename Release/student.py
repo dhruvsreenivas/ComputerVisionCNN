@@ -267,7 +267,7 @@ def get_student_settings(net):
     # TODO: Create data transform pipeline for your model
     # transforms.ToPILImage() must be first, followed by transforms.ToTensor()
     # TODO-BLOCK-BEGIN
-    transform = transforms.Compose([transforms.ToPILImage(), transforms.ToTensor(), Contrast(min_contrast=0.3, max_contrast=0.9), Shift(max_shift=5), Rotate(max_angle=20), HorizontalFlip(p=0.5)])
+    transform = transforms.Compose([transforms.ToPILImage(), transforms.ToTensor(), transforms.Normalize(dataset_means, dataset_stds), Contrast(min_contrast=0.3, max_contrast=0.9), Shift(max_shift=5), Rotate(max_angle=10), HorizontalFlip(p=0.5)])
     # TODO-BLOCK-END
 
     # TODO: Settings for dataloader and training. These settings
@@ -293,9 +293,8 @@ class AnimalStudentNet(nn.Module):
         self.conv1 = nn.Conv2d(3, 6, 3, stride=2, padding=1)
         self.conv2 = nn.Conv2d(6, 12, 3, stride=2, padding=1)
         self.conv3 = nn.Conv2d(12, 24, 3, stride=2, padding=1)
-        self.fc1 = nn.Linear(4*4*24, 256)
-        self.fc2 = nn.Linear(256, 64)
-        self.cls = nn.Linear(64, 16)
+        self.fc = nn.Linear(2*2*24, 128)
+        self.cls = nn.Linear(128, 16)
         # TODO-BLOCK-END
 
     def forward(self, x):
@@ -305,12 +304,12 @@ class AnimalStudentNet(nn.Module):
         # TODO-BLOCK-BEGIN
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
+        x = F.max_pool2d(x, 2)
         x = F.relu(self.conv3(x))
         x = F.max_pool2d(x, 2)
         
-        x = x.view(-1, 4*4*24)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
+        x = x.view(-1, 2*2*24)
+        x = F.relu(self.fc(x))
         x = self.cls(x)
         # TODO-BLOCK-END
         return x
