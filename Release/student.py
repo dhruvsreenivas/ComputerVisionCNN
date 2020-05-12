@@ -293,7 +293,7 @@ class AnimalStudentNet(nn.Module):
         self.conv1 = nn.Conv2d(3, 6, 3, stride=2, padding=1)
         self.conv2 = nn.Conv2d(6, 12, 3, stride=2, padding=1)
         self.conv3 = nn.Conv2d(12, 24, 3, stride=2, padding=1)
-        self.fc = nn.Linear(2*2*24, 128)
+        self.fc = nn.Linear(4*4*24, 128)
         self.cls = nn.Linear(128, 16)
         # TODO-BLOCK-END
 
@@ -304,11 +304,10 @@ class AnimalStudentNet(nn.Module):
         # TODO-BLOCK-BEGIN
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
-        x = F.max_pool2d(x, 2)
         x = F.relu(self.conv3(x))
-        x = F.max_pool2d(x, 2)
+        x = F.avg_pool2d(x, 2)
         
-        x = x.view(-1, 2*2*24)
+        x = x.view(-1, 4*4*24)
         x = F.relu(self.fc(x))
         x = self.cls(x)
         # TODO-BLOCK-END
