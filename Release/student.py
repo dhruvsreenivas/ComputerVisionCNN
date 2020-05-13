@@ -267,7 +267,7 @@ def get_student_settings(net):
     # TODO: Create data transform pipeline for your model
     # transforms.ToPILImage() must be first, followed by transforms.ToTensor()
     # TODO-BLOCK-BEGIN
-    transform = transforms.Compose([transforms.ToPILImage(), transforms.ToTensor(), transforms.Normalize(dataset_means, dataset_stds), Contrast(min_contrast=0.3, max_contrast=0.9), Shift(max_shift=5), Rotate(max_angle=10), HorizontalFlip(p=0.5)])
+    transform = transforms.Compose([transforms.ToPILImage(), transforms.ToTensor(), Contrast(min_contrast=0.3, max_contrast=0.9), Shift(max_shift=5), Rotate(max_angle=10), HorizontalFlip(p=0.5), transforms.Normalize(dataset_means, dataset_stds)])
     # TODO-BLOCK-END
 
     # TODO: Settings for dataloader and training. These settings
@@ -290,14 +290,16 @@ class AnimalStudentNet(nn.Module):
         super(AnimalStudentNet, self).__init__()
         # TODO: Define layers of model architecture
         # TODO-BLOCK-BEGIN
-        self.conv1 = nn.Conv2d(3, 6, 3, stride=2, padding=1)
-        self.bn1 = nn.BatchNorm2d(6)
-        self.conv2 = nn.Conv2d(6, 12, 3, stride=2, padding=1)
-        self.bn2 = nn.BatchNorm2d(12)
-        self.conv3 = nn.Conv2d(12, 24, 3, stride=2, padding=1)
-        self.bn3 = nn.BatchNorm2d(24)
-        self.fc = nn.Linear(4*4*24, 128)
-        #self.drop = nn.Dropout(p=0.5)
+        self.conv1 = nn.Conv2d(3, 9, 3, stride=2, padding=1)
+        self.bn1 = nn.BatchNorm2d(9)
+        self.conv2 = nn.Conv2d(9, 27, 3, stride=2, padding=1)
+        self.bn2 = nn.BatchNorm2d(27)
+        self.conv3 = nn.Conv2d(27, 81, 3, stride=2, padding=1)
+        self.bn3 = nn.BatchNorm2d(81)
+        self.conv4 = nn.Conv2d(81, 243, 3, stride=2, padding=1)
+        self.bn4 = nn.BatchNorm2d(243)
+        self.fc = nn.Linear(2*2*243, 128)
+        self.drop = nn.Dropout(p=0.3)
         self.cls = nn.Linear(128, 16)
         # TODO-BLOCK-END
 
@@ -312,11 +314,13 @@ class AnimalStudentNet(nn.Module):
         x = self.bn2(x)
         x = F.relu(self.conv3(x))
         x = self.bn3(x)
+        x = F.relu(self.conv4(x))
+        x = self.bn4(x)
         x = F.avg_pool2d(x, 2, 2)
         
-        x = x.view(-1, 4*4*24)
+        x = x.view(-1, 2*2*243)
         x = F.relu(self.fc(x))
-        #x = self.drop(x)
+        x = self.drop(x)
         x = self.cls(x)
         # TODO-BLOCK-END
         return x
