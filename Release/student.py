@@ -278,7 +278,7 @@ def get_student_settings(net):
 
     # TODO: epochs, criterion and optimizer
     # TODO-BLOCK-BEGIN
-    epochs = 60
+    epochs = 90
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=0.005)
     # TODO-BLOCK-END
