@@ -278,7 +278,7 @@ def get_student_settings(net):
 
     # TODO: epochs, criterion and optimizer
     # TODO-BLOCK-BEGIN
-    epochs = 90
+    epochs = 75
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=0.005)
     # TODO-BLOCK-END
@@ -290,15 +290,15 @@ class AnimalStudentNet(nn.Module):
         super(AnimalStudentNet, self).__init__()
         # TODO: Define layers of model architecture
         # TODO-BLOCK-BEGIN
-        self.conv1 = nn.Conv2d(3, 9, 3, stride=2, padding=1)
-        self.bn1 = nn.BatchNorm2d(9)
-        self.conv2 = nn.Conv2d(9, 27, 3, stride=2, padding=1)
-        self.bn2 = nn.BatchNorm2d(27)
-        self.conv3 = nn.Conv2d(27, 81, 3, stride=2, padding=1)
-        self.bn3 = nn.BatchNorm2d(81)
-        self.conv4 = nn.Conv2d(81, 243, 3, stride=2, padding=1)
-        self.bn4 = nn.BatchNorm2d(243)
-        self.fc = nn.Linear(2*2*243, 128)
+        self.conv1 = nn.Conv2d(3, 12, 3, stride=2, padding=1)
+        self.bn1 = nn.BatchNorm2d(12)
+        self.conv2 = nn.Conv2d(12, 48, 3, stride=2, padding=1)
+        self.bn2 = nn.BatchNorm2d(48)
+        self.conv3 = nn.Conv2d(48, 144, 3, stride=2, padding=1)
+        self.bn3 = nn.BatchNorm2d(144)
+        self.conv4 = nn.Conv2d(144, 288, 3, stride=2, padding=1)
+        self.bn4 = nn.BatchNorm2d(288)
+        self.fc = nn.Linear(2*2*288, 128)
         self.drop = nn.Dropout(p=0.3)
         self.cls = nn.Linear(128, 16)
         # TODO-BLOCK-END
@@ -318,7 +318,7 @@ class AnimalStudentNet(nn.Module):
         x = self.bn4(x)
         x = F.avg_pool2d(x, 2, 2)
         
-        x = x.view(-1, 2*2*243)
+        x = x.view(-1, 2*2*288)
         x = F.relu(self.fc(x))
         x = self.drop(x)
         x = self.cls(x)
@@ -357,7 +357,13 @@ def get_adversarial(img, output, label, net, criterion, epsilon):
 
     # TODO: Define forward pass
     # TODO-BLOCK-BEGIN
+    loss = criterion(output, label)
+    loss.backward()
 
+    grad = img.grad
+    alpha = torch.sign(grad) * epsilon
+    perturbed_image = torch.clamp(img + alpha, 0, 1)
+    noise = perturbed_image - img
     # TODO-BLOCK-END
 
     return perturbed_image, noise
